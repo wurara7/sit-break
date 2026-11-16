@@ -36,6 +36,21 @@ function dragWindow(event: React.MouseEvent) {
   void getCurrentWindow().startDragging().catch(console.error);
 }
 
+export function dragWindowFromBackground(event: React.MouseEvent) {
+  const { target } = event;
+  if (!(target instanceof HTMLElement)) return;
+  const background = target.dataset.windowDragBackground;
+  // 只处理命中的留白节点。可滚动的正文区域还需要接收鼠标焦点。
+  if (
+    background === undefined ||
+    (background === "if-content-fits" &&
+      (target.scrollHeight > target.clientHeight ||
+        target.scrollWidth > target.clientWidth))
+  )
+    return;
+  dragWindow(event);
+}
+
 export function WindowTitleBar({ children }: { children?: ReactNode }) {
   return (
     <header className="window-titlebar" onMouseDown={dragWindow}>

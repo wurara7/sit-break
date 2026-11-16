@@ -41,24 +41,33 @@ async function showReminder(state: Partial<TimerState>) {
 }
 
 describe("休息浮窗拖动", () => {
-  it("能从提醒窗标题栏拖动，提醒正文和再等等按钮保留鼠标操作", async () => {
+  it("能拖动提醒窗的边缘和按钮间距，提醒正文和按钮保留鼠标操作", async () => {
     const tip = "喝一杯水";
-    await showReminder({ mode: "remind", tip });
+    const { container } = await showReminder({ mode: "remind", tip });
     const user = userEvent.setup();
 
-    fireEvent.mouseDown(screen.getByText("Sit Break"), { button: 0 });
-    expect(startDragging).toHaveBeenCalledOnce();
-
-    fireEvent.mouseDown(screen.getByRole("heading", { name: STR.zh.timeToMove }), {
+    const reminder = container.querySelector("#cardRemind")!;
+    fireEvent.mouseDown(reminder, { button: 2 });
+    expect(startDragging).not.toHaveBeenCalled();
+    fireEvent.mouseDown(reminder, { button: 0 });
+    fireEvent.mouseDown(container.querySelector(".reminder-actions")!, {
       button: 0,
     });
+    expect(startDragging).toHaveBeenCalledTimes(2);
+
+    expect(
+      fireEvent.mouseDown(
+        screen.getByRole("heading", { name: STR.zh.timeToMove }),
+        { button: 0 },
+      ),
+    ).toBe(true);
     expect(fireEvent.mouseDown(screen.getByText(tip), { button: 0 })).toBe(true);
     await user.click(screen.getByRole("button", { name: STR.zh.snooze }));
     expect(invoke).toHaveBeenCalledWith("postpone");
-    expect(startDragging).toHaveBeenCalledOnce();
+    expect(startDragging).toHaveBeenCalledTimes(2);
   });
 
-  it("能从休息窗标题栏拖动，点击休息内容后焦点留在滚动区", async () => {
+  it("休息窗的空白区可以拖动，点击可滚动正文能取得焦点", async () => {
     const tip = "跟着下面的说明伸展";
     const { container } = await showReminder({
       mode: "break",
@@ -66,16 +75,37 @@ describe("休息浮窗拖动", () => {
       tip,
     });
 
-    fireEvent.mouseDown(screen.getByText("Sit Break"), { button: 0 });
+    fireEvent.mouseDown(container.querySelector(".break-header")!, {
+      button: 0,
+    });
     expect(startDragging).toHaveBeenCalledOnce();
 
+    const scrollArea = container.querySelector("#stretchText")!;
+    vi.spyOn(scrollArea, "clientHeight", "get").mockReturnValue(80);
+    vi.spyOn(scrollArea, "scrollHeight", "get").mockReturnValue(140);
+    const user = userEvent.setup();
     fireEvent.mouseDown(screen.getByRole("timer"), { button: 0 });
-    await userEvent.setup().click(screen.getByText(tip));
-    expect(document.activeElement).toBe(container.querySelector("#stretchText"));
+    await user.click(scrollArea);
+    expect(document.activeElement).toBe(scrollArea);
+    await user.click(screen.getByText(tip));
+    expect(document.activeElement).toBe(scrollArea);
     expect(startDragging).toHaveBeenCalledOnce();
   });
 
-  it("有视频时可拖动标题栏，按住视频进度轨道只调整进度", async () => {
+  it("短正文下方的留白也可以拖动", async () => {
+    const tip = "喝一杯水";
+    const { container } = await showReminder({ mode: "break", tip });
+    const scrollArea = container.querySelector("#stretchText")!;
+    vi.spyOn(scrollArea, "clientHeight", "get").mockReturnValue(80);
+    vi.spyOn(scrollArea, "scrollHeight", "get").mockReturnValue(80);
+
+    fireEvent.mouseDown(scrollArea, { button: 0 });
+    expect(startDragging).toHaveBeenCalledOnce();
+    expect(fireEvent.mouseDown(screen.getByText(tip), { button: 0 })).toBe(true);
+    expect(startDragging).toHaveBeenCalledOnce();
+  });
+
+  it("有视频时可从窗边拖动，按住进度轨道只调整进度", async () => {
     vi.spyOn(HTMLMediaElement.prototype, "load").mockImplementation(() => {});
     vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue(undefined);
     vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => {});
@@ -92,9 +122,10 @@ describe("休息浮窗拖动", () => {
     fireEvent(video, new Event("loadedmetadata"));
     fireEvent(video, new Event("loadeddata"));
 
-    fireEvent.mouseDown(screen.getByText("Sit Break"), { button: 0 });
+    fireEvent.mouseDown(container.querySelector("#cardBreak")!, { button: 0 });
     expect(startDragging).toHaveBeenCalledOnce();
 
+    expect(fireEvent.mouseDown(video, { button: 0 })).toBe(true);
     // Mantine 把 slider 角色放在手柄上，轨道需要单独操作。
     const track = container.querySelector(".video-seek .mantine-Slider-track")!;
     vi.spyOn(track.parentElement!, "getBoundingClientRect").mockReturnValue(

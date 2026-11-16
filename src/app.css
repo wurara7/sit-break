@@ -157,6 +157,12 @@ label {
 .window-titlebar-name svg {
   color: var(--accent);
 }
+[data-window-drag-background] {
+  cursor: grab;
+}
+:where([data-window-drag-background] > :not([data-window-drag-background])) {
+  cursor: auto;
+}
 .settings-page {
   --settings-window-radius: 18px;
   clip-path: inset(0 round var(--settings-window-radius));
@@ -661,20 +667,11 @@ label {
   border-radius: 18px;
   overflow: hidden;
 }
-.reminder-surface {
-  --window-titlebar-height: 26px;
-  --reminder-padding-top: calc(var(--window-titlebar-height) + 8px);
-  position: relative;
-}
-.reminder-surface > .window-titlebar {
-  position: absolute;
-  inset: 0 0 auto;
-}
 .reminder-prompt {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: var(--reminder-padding-top) 24px 24px;
+  padding: 24px;
 }
 .reminder-prompt h1 {
   font-size: 23px;
@@ -711,14 +708,13 @@ label {
   flex: 1;
 }
 .break-card {
-  --break-padding: 22px;
-  padding: var(--reminder-padding-top) var(--break-padding) var(--break-padding);
+  padding: 22px;
   display: flex;
 }
 .break-details {
   display: flex;
   flex-direction: column;
-  gap: 13px;
+  gap: 17px;
   min-width: 0;
   flex: 1;
 }
@@ -776,8 +772,8 @@ label {
   min-height: 36px;
 }
 .break-card.has-guidance {
-  --break-padding: 18px;
   gap: 22px;
+  padding: 18px;
 }
 .has-guidance .guidance-content {
   width: 57%;
@@ -788,7 +784,7 @@ label {
 .has-guidance .break-details {
   border-left: 1px solid var(--surface-border);
   padding-left: 20px;
-  gap: 12px;
+  gap: 15px;
 }
 .has-guidance .break-header {
   flex-direction: column;
@@ -1062,7 +1058,7 @@ label {
     flex-basis: 100%;
   }
   .break-card {
-    --break-padding: 18px;
+    padding: 18px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
