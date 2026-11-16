@@ -41,24 +41,24 @@ async function showReminder(state: Partial<TimerState>) {
 }
 
 describe("休息浮窗拖动", () => {
-  it("能从提醒标题拖动，提醒小字和再等等按钮保留鼠标操作", async () => {
+  it("能从提醒窗标题栏拖动，提醒正文和再等等按钮保留鼠标操作", async () => {
     const tip = "喝一杯水";
     await showReminder({ mode: "remind", tip });
     const user = userEvent.setup();
 
-    fireEvent.mouseDown(
-      screen.getByRole("heading", { name: STR.zh.timeToMove }),
-      { button: 0 },
-    );
+    fireEvent.mouseDown(screen.getByText("Sit Break"), { button: 0 });
     expect(startDragging).toHaveBeenCalledOnce();
 
+    fireEvent.mouseDown(screen.getByRole("heading", { name: STR.zh.timeToMove }), {
+      button: 0,
+    });
     expect(fireEvent.mouseDown(screen.getByText(tip), { button: 0 })).toBe(true);
     await user.click(screen.getByRole("button", { name: STR.zh.snooze }));
     expect(invoke).toHaveBeenCalledWith("postpone");
     expect(startDragging).toHaveBeenCalledOnce();
   });
 
-  it("能从倒计时顶栏拖动，点击休息内容后焦点留在滚动区", async () => {
+  it("能从休息窗标题栏拖动，点击休息内容后焦点留在滚动区", async () => {
     const tip = "跟着下面的说明伸展";
     const { container } = await showReminder({
       mode: "break",
@@ -66,15 +66,16 @@ describe("休息浮窗拖动", () => {
       tip,
     });
 
-    fireEvent.mouseDown(screen.getByRole("timer"), { button: 0 });
+    fireEvent.mouseDown(screen.getByText("Sit Break"), { button: 0 });
     expect(startDragging).toHaveBeenCalledOnce();
 
+    fireEvent.mouseDown(screen.getByRole("timer"), { button: 0 });
     await userEvent.setup().click(screen.getByText(tip));
     expect(document.activeElement).toBe(container.querySelector("#stretchText"));
     expect(startDragging).toHaveBeenCalledOnce();
   });
 
-  it("按住视频进度轨道只调整进度", async () => {
+  it("有视频时可拖动标题栏，按住视频进度轨道只调整进度", async () => {
     vi.spyOn(HTMLMediaElement.prototype, "load").mockImplementation(() => {});
     vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue(undefined);
     vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => {});
@@ -91,13 +92,16 @@ describe("休息浮窗拖动", () => {
     fireEvent(video, new Event("loadedmetadata"));
     fireEvent(video, new Event("loadeddata"));
 
+    fireEvent.mouseDown(screen.getByText("Sit Break"), { button: 0 });
+    expect(startDragging).toHaveBeenCalledOnce();
+
     // Mantine 把 slider 角色放在手柄上，轨道需要单独操作。
     const track = container.querySelector(".video-seek .mantine-Slider-track")!;
     vi.spyOn(track.parentElement!, "getBoundingClientRect").mockReturnValue(
       new DOMRect(0, 0, 100, 12),
     );
     fireEvent.mouseDown(track, { button: 0, clientX: 25, clientY: 6 });
-    expect(startDragging).not.toHaveBeenCalled();
+    expect(startDragging).toHaveBeenCalledOnce();
     fireEvent.mouseMove(document, { clientX: 75, clientY: 6 });
     await waitFor(() =>
       expect(screen.getByRole("slider").getAttribute("aria-valuenow")).toBe(

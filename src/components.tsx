@@ -13,6 +13,7 @@ import {
 } from "@mantine/core";
 import { TimePicker } from "@mantine/dates";
 import {
+  ClockIcon,
   DesktopIcon,
   MinusIcon,
   MoonIcon,
@@ -23,7 +24,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import type { Appearance, NumericDraft } from "./model";
 
 export type Strings = Record<string, string>;
-export function dragWindow(event: React.MouseEvent) {
+function dragWindow(event: React.MouseEvent) {
   if (
     event.button !== 0 ||
     (event.target as HTMLElement).closest(
@@ -34,6 +35,19 @@ export function dragWindow(event: React.MouseEvent) {
   event.preventDefault();
   void getCurrentWindow().startDragging().catch(console.error);
 }
+
+export function WindowTitleBar({ children }: { children?: ReactNode }) {
+  return (
+    <header className="window-titlebar" onMouseDown={dragWindow}>
+      <span className="window-titlebar-name">
+        <ClockIcon size={16} aria-hidden="true" />
+        Sit Break
+      </span>
+      {children}
+    </header>
+  );
+}
+
 export function AppearancePicker({
   value,
   onChange,

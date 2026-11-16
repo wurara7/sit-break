@@ -131,40 +131,56 @@ label {
 .mantine-Switch-track {
   cursor: pointer;
 }
+.window-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--window-titlebar-height);
+  padding-inline: 12px;
+  background: var(--surface-subtle);
+  border-bottom: 1px solid var(--surface-border);
+  cursor: grab;
+  user-select: none;
+}
+.window-titlebar:active {
+  cursor: grabbing;
+}
+.window-titlebar-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.window-titlebar-name svg {
+  color: var(--accent);
+}
 .settings-page {
   --settings-window-radius: 18px;
   clip-path: inset(0 round var(--settings-window-radius));
 }
 .settings-shell {
+  --window-titlebar-height: 36px;
   display: grid;
   grid-template-columns: 176px minmax(0, 1fr);
+  grid-template-rows: var(--window-titlebar-height) minmax(0, 1fr);
   height: 100%;
   background: var(--surface);
   border: 1px solid var(--surface-border);
   border-radius: var(--settings-window-radius);
   overflow: hidden;
 }
+.settings-shell > .window-titlebar {
+  grid-column: 1 / -1;
+}
 .settings-sidebar {
   display: flex;
   flex-direction: column;
   background: var(--surface-subtle);
-  padding: 30px 13px 22px;
+  padding: 20px 13px 22px;
   border-right: 1px solid var(--surface-border);
-}
-.sidebar-brand {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 0 10px;
-  margin-bottom: 36px;
-  color: var(--accent);
-  height: 28px;
-}
-.sidebar-brand p {
-  color: var(--ink);
-  font-size: 16px;
-  letter-spacing: -0.4px;
-  white-space: nowrap;
 }
 .settings-sidebar nav {
   display: flex;
@@ -225,10 +241,6 @@ label {
   flex-direction: column;
 }
 .settings-close {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  z-index: 2;
   color: var(--muted);
 }
 .settings-scroll {
@@ -239,7 +251,7 @@ label {
   overscroll-behavior: contain;
 }
 .settings-view {
-  padding: 42px 30px 28px;
+  padding: 16px 30px 28px;
   animation: page-appear 200ms ease-out;
 }
 .settings-heading {
@@ -649,15 +661,22 @@ label {
   border-radius: 18px;
   overflow: hidden;
 }
+.reminder-surface {
+  --window-titlebar-height: 26px;
+  --reminder-padding-top: calc(var(--window-titlebar-height) + 8px);
+  position: relative;
+}
+.reminder-surface > .window-titlebar {
+  position: absolute;
+  inset: 0 0 auto;
+}
 .reminder-prompt {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 24px;
+  padding: var(--reminder-padding-top) 24px 24px;
 }
 .reminder-prompt h1 {
-  align-self: stretch;
-  cursor: grab;
   font-size: 23px;
   margin: 21px 0 7px;
   letter-spacing: -0.5px;
@@ -692,13 +711,14 @@ label {
   flex: 1;
 }
 .break-card {
-  padding: 22px;
+  --break-padding: 22px;
+  padding: var(--reminder-padding-top) var(--break-padding) var(--break-padding);
   display: flex;
 }
 .break-details {
   display: flex;
   flex-direction: column;
-  gap: 17px;
+  gap: 13px;
   min-width: 0;
   flex: 1;
 }
@@ -707,7 +727,6 @@ label {
   justify-content: space-between;
   gap: 12px;
   align-items: center;
-  cursor: grab;
 }
 .break-clock {
   text-align: right;
@@ -757,8 +776,8 @@ label {
   min-height: 36px;
 }
 .break-card.has-guidance {
+  --break-padding: 18px;
   gap: 22px;
-  padding: 18px;
 }
 .has-guidance .guidance-content {
   width: 57%;
@@ -769,7 +788,7 @@ label {
 .has-guidance .break-details {
   border-left: 1px solid var(--surface-border);
   padding-left: 20px;
-  gap: 15px;
+  gap: 12px;
 }
 .has-guidance .break-header {
   flex-direction: column;
@@ -952,14 +971,8 @@ label {
     grid-template-columns: 58px minmax(0, 1fr);
   }
   .settings-sidebar {
-    padding: 29px 6px 16px;
+    padding: 20px 6px 16px;
   }
-  .sidebar-brand {
-    padding: 0;
-    justify-content: center;
-    margin-bottom: 32px;
-  }
-  .sidebar-brand p,
   .settings-sidebar .mantine-NavLink-body {
     display: none;
   }
@@ -984,7 +997,7 @@ label {
     border-radius: 6px;
   }
   .settings-view {
-    padding: 43px 23px 24px;
+    padding: 16px 23px 24px;
   }
   .settings-footer {
     padding: 14px 23px;
@@ -1049,7 +1062,7 @@ label {
     flex-basis: 100%;
   }
   .break-card {
-    padding: 18px;
+    --break-padding: 18px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
